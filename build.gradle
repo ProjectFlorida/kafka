@@ -259,7 +259,7 @@ project(':core') {
   }
 
   task testJar(type: Jar) {
-    appendix = 'test'
+    classifier = 'test'
     from sourceSets.test.output
   }
 
@@ -270,6 +270,9 @@ project(':core') {
     }
   }
 
+  artifacts {
+    archives testJar
+  }
 }
 
 project(':perf') {
@@ -352,7 +355,7 @@ project(':clients') {
   }
 
   task testJar(type: Jar) {
-    appendix = 'test'
+    classifier = 'test'
     from sourceSets.test.output
   }
 

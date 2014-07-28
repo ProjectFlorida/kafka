@@ -5,7 +5,7 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -17,7 +17,6 @@
 
 package kafka.message
 
-import scala.reflect.BeanProperty
 import kafka.utils.Logging
 import java.nio.ByteBuffer
 import java.nio.channels._
@@ -26,7 +25,7 @@ import java.util.concurrent.atomic.AtomicLong
 import kafka.utils.IteratorTemplate
 
 object ByteBufferMessageSet {
-  
+
   private def create(offsetCounter: AtomicLong, compressionCodec: CompressionCodec, messages: Message*): ByteBuffer = {
     if(messages.size == 0) {
       MessageSet.Empty.buffer
@@ -58,7 +57,7 @@ object ByteBufferMessageSet {
       buffer
     }
   }
-  
+
   def decompress(message: Message): ByteBufferMessageSet = {
     val outputStream: ByteArrayOutputStream = new ByteArrayOutputStream
     val inputStream: InputStream = new ByteBufferBackedInputStream(message.payload)
@@ -76,7 +75,7 @@ object ByteBufferMessageSet {
     outputBuffer.rewind
     new ByteBufferMessageSet(outputBuffer)
   }
-    
+
   private[kafka] def writeMessage(buffer: ByteBuffer, message: Message, offset: Long) {
     buffer.putLong(offset)
     buffer.putInt(message.size)
@@ -93,15 +92,16 @@ object ByteBufferMessageSet {
  * Option 1: From a ByteBuffer which already contains the serialized message set. Consumers will use this method.
  *
  * Option 2: Give it a list of messages along with instructions relating to serialization format. Producers will use this method.
- * 
+ *
  */
-class ByteBufferMessageSet(@BeanProperty val buffer: ByteBuffer) extends MessageSet with Logging {
+class ByteBufferMessageSet(val buffer: ByteBuffer) extends MessageSet with Logging {
+  def getBuffer = buffer
   private var shallowValidByteCount = -1
 
   def this(compressionCodec: CompressionCodec, messages: Message*) {
     this(ByteBufferMessageSet.create(new AtomicLong(0), compressionCodec, messages:_*))
   }
-  
+
   def this(compressionCodec: CompressionCodec, offsetCounter: AtomicLong, messages: Message*) {
     this(ByteBufferMessageSet.create(offsetCounter, compressionCodec, messages:_*))
   }
@@ -122,7 +122,7 @@ class ByteBufferMessageSet(@BeanProperty val buffer: ByteBuffer) extends Message
     }
     shallowValidByteCount
   }
-  
+
   /** Write the messages in this set to the given channel */
   def writeTo(channel: GatheringByteChannel, offset: Long, size: Int): Int = {
     // Ignore offset and size from input. We just want to write the whole buffer to the channel.
@@ -156,11 +156,11 @@ class ByteBufferMessageSet(@BeanProperty val buffer: ByteBuffer) extends Message
         val size = topIter.getInt()
         if(size < Message.MinHeaderSize)
           throw new InvalidMessageException("Message found with corrupt size (" + size + ")")
-        
+
         // we have an incomplete message
         if(topIter.remaining < size)
           return allDone()
-          
+
         // read the current message and check correctness
         val message = topIter.slice()
         message.limit(size)
@@ -193,10 +193,10 @@ class ByteBufferMessageSet(@BeanProperty val buffer: ByteBuffer) extends Message
             innerIter.next
         }
       }
-      
+
     }
   }
-  
+
   /**
    * Update the offsets for this message set. This method attempts to do an in-place conversion
    * if there is no compression, but otherwise recopies the messages
@@ -219,13 +219,13 @@ class ByteBufferMessageSet(@BeanProperty val buffer: ByteBuffer) extends Message
       new ByteBufferMessageSet(compressionCodec = codec, offsetCounter = offsetCounter, messages = messages.toBuffer:_*)
     }
   }
- 
+
 
   /**
    * The total number of bytes in this message set, including any partial trailing messages
    */
   def sizeInBytes: Int = buffer.limit
-  
+
   /**
    * The total number of bytes in this message set not including any partial, trailing messages
    */
@@ -236,7 +236,7 @@ class ByteBufferMessageSet(@BeanProperty val buffer: ByteBuffer) extends Message
    */
   override def equals(other: Any): Boolean = {
     other match {
-      case that: ByteBufferMessageSet => 
+      case that: ByteBufferMessageSet =>
         buffer.equals(that.buffer)
       case _ => false
     }

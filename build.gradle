@@ -222,8 +222,8 @@ project(':core') {
     } else if (scalaVersion.startsWith('2.9')) {
       testCompile "org.scalatest:scalatest_2.9.3:1.9.2"
     } else {
-      compile 'org.scala-lang.modules:scala-xml_2.11.0-M8:1.0.0-RC7'
-      compile 'org.scala-lang.modules:scala-parser-combinators_2.11.0-M7:1.0.0-RC5'
+      compile 'org.scala-lang.modules:scala-xml_2.11:1.0.2'
+      compile 'org.scala-lang.modules:scala-parser-combinators_2.11:1.0.2'
       testCompile "org.scalatest:scalatest_2.11:2.2.0"
     }
   }
